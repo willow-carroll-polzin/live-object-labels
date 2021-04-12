@@ -228,6 +228,12 @@ def array_to_image(arr):
 
 
 def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
+    #Store the depths, x's, and y's
+    depth = []
+    x = []
+    y = []
+    labels = []
+
     #Colours to draw on GUI with
     classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
@@ -238,27 +244,20 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     color_frame = frames.get_color_frame()
 
     if not depth_frame and not color_frame:
-        return
-    #rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-    
-    #Convert the input frame to a array of pixels
-    im, arr = array_to_image(color_frame) 
+        return x, y, labels, depth, color_frame #Return null
 
     # # Convert images to numpy arrays
-    # depth_arr = np.asanyarray(depth_frame.get_data())
-    # color_arr = np.asanyarray(color_frame.get_data())
+    depth_arr = np.asanyarray(depth_frame.get_data())
+    color_arr = np.asanyarray(color_frame.get_data())
+
+    #Convert the input frame to a array of pixels
+    im, arr = array_to_image(color_arr) 
 
     num = c_int(0)
     pnum = pointer(num)
     predict_image(net, im)
     dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
     num = pnum[0]
-
-    #Store the depths, x's, and y's
-    depth = []
-    x = []
-    y = []
-    labels = []
 
     if (nms): do_nms_obj(dets, num, meta.classes, nms);
     
@@ -277,32 +276,30 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
                 y2 = int(b.y + b.h / 2.)
 
                 #Draw bounding box on image and add label
-                cv.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[0], 2)
-                cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
+                cv.rectangle(color_arr, (x1, y1), (x2, y2), classes_box_colors[0], 2)
+                cv.putText(color_arr, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
 
                 #Get distance to bounding box centroid
-                depth.append(depth_frame.get_distance(int(b.x),int(b.y)))  
-                print (depth[i])
-                
-                        
-    cv.imshow('output', frame)
+                depth.append(depth_frame.get_distance(int(b.x),int(b.y)))                        
+    
+    cv.imshow('output', color_arr)
     if cv.waitKey(1) == ord('q'):
-        return        
-    return x,y,depth,labels,frame
+        return      
+    return x,y,depth,labels,color_arr
 
 # Get the target depth
 def getTarget(pipeD435, net, meta, guiShow):
     #Network will make predictions on each frame
-    #x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
-    predictFrames(net, meta, pipeD435) 
-    print("AAA")
-
+    x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
+    #predictFrames(net, meta, pipeD435) 
+    print(depth,labels)
+    
     #Calculate angle between camera origin and the centroid of bounding box
-    # theta = []
-    # for i in range(len(x)):
-    #     theta.append(x[i] /600*87-87.0/2) 
-    #     if (theta[i] < 0): theta[i] += 360
-    #     if (theta[i] > 180): theta[i] = theta[i] - 360
+    theta = []
+    for i in range(len(x)):
+        theta.append(x[i] /600*87-87.0/2) 
+        if (theta[i] < 0): theta[i] += 360
+        if (theta[i] > 180): theta[i] = theta[i] - 360
 
     #Display aruco tracking
     # if (guiShow == 1):
@@ -311,8 +308,8 @@ def getTarget(pipeD435, net, meta, guiShow):
     #     if cv.waitKey(1) == ord('q'):
     #         return       
 
-    #detections = [x,y,depth,theta,labels]
-    #return(detections)
+    detections = [x,y,depth,theta,labels]
+    return(detections)
 
 
 # Transform x,y,depth coordinates in 3D to 2D
@@ -329,11 +326,8 @@ def mapGenerator(detections):
     #Display map
 
 if __name__ == "__main__":
-    #net = load_net("yolov2-tiny.cfg", "yolov2-tiny.weights", 0)
-    #meta = load_meta("voc.data")
-    # net = load_net("cfg/yolov3.cfg", "yolov3.weights", 0)
-    # meta = load_meta("cfg/coco.data")
-    guiShow = 1 #Set to 0 to turn off GUI's
+    #Set to 0 to turn off GUI's:
+    guiShow = 1 
     
     #Load YOLOv3:
     net = load_net("./models/cfg/yolov3.cfg".encode('utf-8'), "./models/weights/yolov3.weights".encode('utf-8'), 0)
@@ -347,10 +341,10 @@ if __name__ == "__main__":
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
     pipeD435.start(config)
 
+    #While camera is on perform detection and mapping:
     while pipeD435.poll_for_frames:
         #Localize detected objects:
         detections = getTarget(pipeD435, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
-        #x,y,depth,theta = getTarget(pipeD435, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
 
         #Create Semantic map:
         mapGenerator(detections)

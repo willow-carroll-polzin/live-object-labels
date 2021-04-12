@@ -242,8 +242,7 @@ def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45)
     dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
     num = pnum[0]
 
-    #Store the depths, x's, and y's
-    depths = []
+    #Store the x, y's, and labels
     x = []
     y = []
     labels = []
@@ -273,12 +272,12 @@ def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45)
     if cv.waitKey(1) & 0xFF == ord('q'):
         return  
 
-    return x,y,depths,labels,frame      
+    return x,y,labels,frame      
 
 # Get the target depth
 def getTarget(frame, net, meta, guiShow):
     #Network will make predictions on each frame
-    x,y,depth,labels,frame = predictFrames(frame, net, meta, guiShow) 
+    x,y,labels,frame = predictFrames(frame, net, meta, guiShow) 
     
     #Calculate angle between camera origin and the centroid of bounding box
     theta = []
@@ -293,8 +292,8 @@ def getTarget(frame, net, meta, guiShow):
     #     cv.waitKey(1)
     #     if cv.waitKey(1) == ord('q'):
     #         return       
-    
-    detections = [x,y,depth,theta,labels]
+
+    detections = [x,y,theta,labels]
     return(detections)
 
 if __name__ == "__main__":
@@ -319,10 +318,9 @@ if __name__ == "__main__":
         if ret:
             #Localize detected objects:
             #x,y,depths,labels,frame = predictFrames(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
-            detections= getTarget(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+            detections = getTarget(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
             # print(len(x))
             # print(len(x))
-            # print(depths)
             # print(labels)
             print(detections)
 
