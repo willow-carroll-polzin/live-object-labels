@@ -1,3 +1,4 @@
+#RUNS ON WEBCAM:
 
 # REQUIRED LIBRARIES:
 from ctypes import *

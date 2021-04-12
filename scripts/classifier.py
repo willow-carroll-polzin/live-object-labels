@@ -1,3 +1,5 @@
+#RUNS ON SINGLE INPUT IMAGE:
+
 # REQUIRED LIBRARIES:
 from ctypes import *
 import math
