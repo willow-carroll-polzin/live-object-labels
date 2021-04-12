@@ -25,3 +25,14 @@ statistical analysis presented in the accompying report.
 4. Run: "python models/modelTesting.py" \
 This will train, validate and test the Logistic Regression model on the 
 two datasets that are located in the "datasets" folder inside of the "LogisticRegression" folder.
+
+## Repo Contents:
+- classifier.py:
+- models:
+    - weights:
+    - data: 
+    - cfg:
+    - libdarknet.so:
+- scripts:
+    - classifierSingle.py:
+    - classifierWebCam.py:
