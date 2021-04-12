@@ -276,24 +276,25 @@ def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45)
     return x,y,depths,labels,frame      
 
 # Get the target depth
-def get_target(pipeD435, net, meta, guiShow):
+def getTarget(frame, net, meta, guiShow):
     #Network will make predictions on each frame
-    x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
+    x,y,depth,labels,frame = predictFrames(frame, net, meta, guiShow) 
     
     #Calculate angle between camera origin and the centroid of bounding box
-    #for ?????
-    theta = (x /600*87-87.0/2) 
-    if (theta < 0): theta += 360
-    if (theta > 180): theta = theta - 360
+    theta = []
+    for i in range(len(x)):
+        theta.append(x[i] /600*87-87.0/2) 
+        if (theta[i] < 0): theta[i] += 360
+        if (theta[i] > 180): theta[i] = theta[i] - 360
 
     #Display aruco tracking
-    if (guiShow == 1):
-        cv.imshow('OBJECTS DETECTED',frame)
-        cv.waitKey(1)
-        if cv.waitKey(1) == ord('q'):
-            return       
-
-    detections = np.array([x,y,depth,theta,labels])
+    # if (guiShow == 1):
+    #     cv.imshow('OBJECTS DETECTED',frame)
+    #     cv.waitKey(1)
+    #     if cv.waitKey(1) == ord('q'):
+    #         return       
+    
+    detections = [x,y,depth,theta,labels]
     return(detections)
 
 if __name__ == "__main__":
@@ -306,23 +307,10 @@ if __name__ == "__main__":
     #Load YOLOv3:
     net = load_net("./models/cfg/yolov3.cfg".encode('utf-8'), "./models/weights/yolov3.weights".encode('utf-8'), 0)
     meta = load_meta("./models/cfg/coco.data".encode('utf-8'))
-    #print(meta.names[79])
     
     #Open camera stream:
     vid_source = 0
     video = cv.VideoCapture(vid_source)
-
-    # while(video.isOpened()):
-    #     # Capture frame-by-frame
-    #     ret, frame = video.read()
-
-    #     # Our operations on the frame come here
-    #     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-
-    #     # Display the resulting frame
-    #     cv.imshow('frame',frame)
-    #     if cv.waitKey(1) & 0xFF == ord('q'):
-    #         break
 
     while video.isOpened():   
         # Capture a frame
@@ -330,16 +318,14 @@ if __name__ == "__main__":
 
         if ret:
             #Localize detected objects:
-            x,y,depths,labels,frame = predictFrames(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
-            print(len(x))
-            print(len(x))
-            print(depths)
-            print(labels)
+            #x,y,depths,labels,frame = predictFrames(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+            detections= getTarget(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+            # print(len(x))
+            # print(len(x))
+            # print(depths)
+            # print(labels)
+            print(detections)
 
             cv.imshow('Test', frame)
             if cv.waitKey(1) & 0xFF == ord('q'):
                 break  
-            #Create Semantic map:
-            #mapGenerator(detections)
-
-#ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time

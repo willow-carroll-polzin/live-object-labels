@@ -227,20 +227,19 @@ def array_to_image(arr):
 #     return res
 
 
-
 def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     #Colours to draw on GUI with
     classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
     
     #Wait for a coherent pair of frames: depth and color
-    frames = pipeline.poll_for_frames()
+    frames = videoSource.poll_for_frames()
     depth_frame = frames.get_depth_frame()
     color_frame = frames.get_color_frame()
 
     if not depth_frame and not color_frame:
         return
-    rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
+    #rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
     #Convert the input frame to a array of pixels
     im, arr = array_to_image(color_frame) 
@@ -256,7 +255,7 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     num = pnum[0]
 
     #Store the depths, x's, and y's
-    depths = []
+    depth = []
     x = []
     y = []
     labels = []
@@ -282,36 +281,38 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
                 cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
 
                 #Get distance to bounding box centroid
-                depths.append(depth_frame.get_distance(int(b.x),int(b.y)))  
-                print (depths[i])
+                depth.append(depth_frame.get_distance(int(b.x),int(b.y)))  
+                print (depth[i])
                 
                         
     cv.imshow('output', frame)
     if cv.waitKey(1) == ord('q'):
         return        
-
-    return x,y,depths,labels,frame
+    return x,y,depth,labels,frame
 
 # Get the target depth
-def get_target(pipeD435, net, meta, guiShow):
+def getTarget(pipeD435, net, meta, guiShow):
     #Network will make predictions on each frame
-    x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
-    
+    #x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
+    predictFrames(net, meta, pipeD435) 
+    print("AAA")
+
     #Calculate angle between camera origin and the centroid of bounding box
-    for ?????
-    theta = (x /600*87-87.0/2) 
-    if (theta < 0): theta += 360
-    if (theta > 180): theta = theta - 360
+    # theta = []
+    # for i in range(len(x)):
+    #     theta.append(x[i] /600*87-87.0/2) 
+    #     if (theta[i] < 0): theta[i] += 360
+    #     if (theta[i] > 180): theta[i] = theta[i] - 360
 
     #Display aruco tracking
-    if (guiShow == 1):
-        cv.imshow('OBJECTS DETECTED',frame)
-        cv.waitKey(1)
-        if cv.waitKey(1) == ord('q'):
-            return       
+    # if (guiShow == 1):
+    #     cv.imshow('OBJECTS DETECTED',frame)
+    #     cv.waitKey(1)
+    #     if cv.waitKey(1) == ord('q'):
+    #         return       
 
-    detections = np.array([x,y,depth,theta,labels])
-    return(detections)
+    #detections = [x,y,depth,theta,labels]
+    #return(detections)
 
 
 # Transform x,y,depth coordinates in 3D to 2D
