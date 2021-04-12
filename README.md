@@ -35,4 +35,4 @@ two datasets that are located in the "datasets" folder inside of the "LogisticRe
     - libdarknet.so:
 - scripts:
     - classifierSingle.py:
-    - classifierWebCam.py:
+    - classifierWebcam.py:

@@ -229,73 +229,97 @@ def array_to_image(arr):
 
 
 def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
-    video = cv.VideoCapture(videoSource)
-    count = 0
-
+    #Colours to draw on GUI with
     classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
-        
-    res, frame = video.read()
-    if not res:
-        break        
+    
+    #Wait for a coherent pair of frames: depth and color
+    frames = pipeline.poll_for_frames()
+    depth_frame = frames.get_depth_frame()
+    color_frame = frames.get_color_frame()
+
+    if not depth_frame and not color_frame:
+        return
     rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
     #Convert the input frame to a array of pixels
-    im, arr = array_to_image(rgb_frame) 
-    
+    im, arr = array_to_image(color_frame) 
+
+    # # Convert images to numpy arrays
+    # depth_arr = np.asanyarray(depth_frame.get_data())
+    # color_arr = np.asanyarray(color_frame.get_data())
+
     num = c_int(0)
     pnum = pointer(num)
     predict_image(net, im)
     dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
     num = pnum[0]
+
+    #Store the depths, x's, and y's
+    depths = np.array()
+    x = np.array()
+    y = np.array()
+    labels = np.array()
+
     if (nms): do_nms_obj(dets, num, meta.classes, nms);
     
-    # res = []
     for j in range(num):
         for i in range(meta.classes):
-            if dets[j].prob[i] > 0:
-                #print (i)
+            if dets[j].prob[i] > 0: #Detection threshold
                 b = dets[j].bbox
+                x.append(b.x)
+                y.append(b.y)
+                labels.append(meta.names[i].decode('utf-8'))
+
+                #Calculate corners of bounding box
                 x1 = int(b.x - b.w / 2.)
                 y1 = int(b.y - b.h / 2.)
                 x2 = int(b.x + b.w / 2.)
                 y2 = int(b.y + b.h / 2.)
+
+                #Draw bounding box on image and add label
                 cv.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[0], 2)
                 cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
 
-                dist = depth_frame.get_distance(int(b.x),int(b.y))  
-                print (dist)
+                #Get distance to bounding box centroid
+                depths.append(depth_frame.get_distance(int(b.x),int(b.y)))  
+                print (depths[i])
+                
                         
     cv.imshow('output', frame)
     if cv.waitKey(1) == ord('q'):
         return        
-    # print res
-    count += 1
-    return x,y,depth
+
+    return x,y,depths,labels,frame
 
 # Get the target depth
-def get_target(self,pipeD435, net, meta, guiShow):
+def get_target(pipeD435, net, meta, guiShow):
     #Network will make predictions on each frame
-    x,y,depth = predictFrames(net, meta, pipeD435) 
-    #Calculate ???
+    x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
+    
+    #Calculate angle between camera origin and the centroid of bounding box
+    for ?????
     theta = (x /600*87-87.0/2) 
     if (theta < 0): theta += 360
     if (theta > 180): theta = theta - 360
-    return(depth, x, y, theta) # x, y, theta
 
     #Display aruco tracking
     if (guiShow == 1):
-        cv2.circle(color_image, (int(avg_centroid_X), int(avg_centroid_Y)), 7, (45, 145, 50), -1)
-        cv2.putText(color_image, "AVG", (int(avg_centroid_X) - 20, int(avg_centroid_Y) - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (45, 145, 50), 2)
-        cv2.imshow('ARUCO TRACKING',color_image)
-        cv2.waitKey(1)
+        cv.imshow('OBJECTS DETECTED',frame)
+        cv.waitKey(1)
+        if cv.waitKey(1) == ord('q'):
+            return       
+
+    detections = np.array([x,y,depth,theta,labels])
+    return(detections)
+
 
 # Transform x,y,depth coordinates in 3D to 2D
 def detectionTransform(detections):
-
+    print("Transform")
 
 # Generate semantic map
-def get_target(detections):
+def mapGenerator(detections):
     #Transform x,y,depth coordinates
     detections2D = detectionTransform(detections)
 

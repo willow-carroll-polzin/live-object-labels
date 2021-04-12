@@ -1,4 +1,4 @@
-#RUNS ON WEBCAM:
+#RUNS ON WEBCAM BUT WITH STRUCTURE MORE SIMILAR TO DEPTH VERSION:
 
 # REQUIRED LIBRARIES:
 from ctypes import *
@@ -227,57 +227,47 @@ def array_to_image(arr):
 #     free_detections(dets, num)
 #     return res
 
-
-
-def runOnVideo(net, meta, vid_source, thresh=.8, hier_thresh=.5, nms=.45):
-    video = cv.VideoCapture(vid_source)
-    count = 0
-
+def runOnVideo(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
     classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
+
+    rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
     
-    while video.isOpened():        
-        res, frame = video.read()
-        if not res:
-            break        
-        rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
-        
-        #Convert the input frame to a array of pixels
-        im, arr = array_to_image(rgb_frame) 
-        
-        num = c_int(0)
-        pnum = pointer(num)
-        predict_image(net, im)
-        dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
-        num = pnum[0]
-        if (nms): do_nms_obj(dets, num, meta.classes, nms);
-        
-        # res = []
-        for j in range(num):
-            for i in range(meta.classes):
-                if dets[j].prob[i] > 0:
-                    #print (i)
-                    b = dets[j].bbox
-                    print (b.x)
-                    x1 = int(b.x - b.w / 2.)
-                    y1 = int(b.y - b.h / 2.)
-                    x2 = int(b.x + b.w / 2.)
-                    y2 = int(b.y + b.h / 2.)
-                    cv.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[0], 2)
-                    cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
-                            
-        cv.imshow('output', frame)
-        if cv.waitKey(1) == ord('q'):
-            break        
-        # print res
-        count += 1
+    #Convert the input frame to a array of pixels
+    im, arr = array_to_image(rgb_frame) 
+    
+    num = c_int(0)
+    pnum = pointer(num)
+    predict_image(net, im)
+    dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
+    num = pnum[0]
+    if (nms): do_nms_obj(dets, num, meta.classes, nms);
+    print (dets)
+    # res = []
+    for j in range(num):
+        for i in range(meta.classes):
+            if dets[j].prob[i] > 0:
+                #print (i)
+                b = dets[j].bbox
+                print (b.x)
+                x1 = int(b.x - b.w / 2.)
+                y1 = int(b.y - b.h / 2.)
+                x2 = int(b.x + b.w / 2.)
+                y2 = int(b.y + b.h / 2.)
+                cv.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[0], 2)
+                cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
+                        
+    cv.imshow('output', frame)
+    if cv.waitKey(1) & 0xFF == ord('q'):
+        return        
     
 if __name__ == "__main__":
     #net = load_net("yolov2-tiny.cfg", "yolov2-tiny.weights", 0)
     #meta = load_meta("voc.data")
     # net = load_net("cfg/yolov3.cfg", "yolov3.weights", 0)
     # meta = load_meta("cfg/coco.data")
-    
+    guiShow = 1 #Set to 0 to turn off GUI's
+
     #Load YOLOv3:
     net = load_net("./models/cfg/yolov3.cfg".encode('utf-8'), "./models/weights/yolov3.weights".encode('utf-8'), 0)
     meta = load_meta("./models/cfg/coco.data".encode('utf-8'))
@@ -285,15 +275,29 @@ if __name__ == "__main__":
     
     #Open camera stream:
     vid_source = 0
-    #ADD INTEL PIPE
-    runOnVideo(net, meta, vid_source) #Network will make predictions on each frame
-    #ADD RETURN OF COORDINATES+CONF
+    video = cv.VideoCapture(vid_source)
 
-    #Localize objects:
-    #ADD COMBINE DEPTH AT CENTROIDS
+    # while(video.isOpened()):
+    #     # Capture frame-by-frame
+    #     ret, frame = video.read()
 
-    #Create Semantic map:
-    #ADD Project depths and centroids onto 2D plane with labels of the predicted objects
+    #     # Our operations on the frame come here
+    #     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
 
+    #     # Display the resulting frame
+    #     cv.imshow('frame',frame)
+    #     if cv.waitKey(1) & 0xFF == ord('q'):
+    #         break
+
+    while video.isOpened():   
+        # Capture a frame
+        ret, frame = video.read()
+
+        if ret:
+            #Localize detected objects:
+            detections = runOnVideo(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+
+            #Create Semantic map:
+            #mapGenerator(detections)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
