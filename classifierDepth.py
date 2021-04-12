@@ -256,10 +256,10 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     num = pnum[0]
 
     #Store the depths, x's, and y's
-    depths = np.array()
-    x = np.array()
-    y = np.array()
-    labels = np.array()
+    depths = []
+    x = []
+    y = []
+    labels = []
 
     if (nms): do_nms_obj(dets, num, meta.classes, nms);
     
@@ -355,3 +355,6 @@ if __name__ == "__main__":
         mapGenerator(detections)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
+#ADDD make it so you have "persistence" in the map, everytime a object at a specific x,y (+/- 10 pix) you
+#increment a count (x,y,depth,label,count) for that object and if count > thresh then draw it on the map, otherwise do 
+#not draw it on the map

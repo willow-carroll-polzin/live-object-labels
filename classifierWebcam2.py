@@ -227,7 +227,7 @@ def array_to_image(arr):
 #     free_detections(dets, num)
 #     return res
 
-def runOnVideo(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
+def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
     classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
 
@@ -241,26 +241,61 @@ def runOnVideo(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
     predict_image(net, im)
     dets = get_network_boxes(net, im.w, im.h, thresh, hier_thresh, None, 0, pnum)
     num = pnum[0]
+
+    #Store the depths, x's, and y's
+    depths = []
+    x = []
+    y = []
+    labels = []
+
     if (nms): do_nms_obj(dets, num, meta.classes, nms);
-    print (dets)
-    # res = []
+
     for j in range(num):
         for i in range(meta.classes):
-            if dets[j].prob[i] > 0:
+            if dets[j].prob[i] > 0: #Detection threshold
                 #print (i)
                 b = dets[j].bbox
-                print (b.x)
+                x.append(b.x)
+                y.append(b.y)
+                labels.append(meta.names[i].decode('utf-8'))
+
+                #Calculate corners of bounding box
                 x1 = int(b.x - b.w / 2.)
                 y1 = int(b.y - b.h / 2.)
                 x2 = int(b.x + b.w / 2.)
                 y2 = int(b.y + b.h / 2.)
+
+                #Draw bounding box on image and add label
                 cv.rectangle(frame, (x1, y1), (x2, y2), classes_box_colors[0], 2)
                 cv.putText(frame, meta.names[i].decode('utf-8'), (x1, y1 - 20), 1, 1, classes_font_colors[0], 2, cv.LINE_AA)
                         
     cv.imshow('output', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
-        return        
+        return  
+
+    return x,y,depths,labels,frame      
+
+# Get the target depth
+def get_target(pipeD435, net, meta, guiShow):
+    #Network will make predictions on each frame
+    x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
     
+    #Calculate angle between camera origin and the centroid of bounding box
+    #for ?????
+    theta = (x /600*87-87.0/2) 
+    if (theta < 0): theta += 360
+    if (theta > 180): theta = theta - 360
+
+    #Display aruco tracking
+    if (guiShow == 1):
+        cv.imshow('OBJECTS DETECTED',frame)
+        cv.waitKey(1)
+        if cv.waitKey(1) == ord('q'):
+            return       
+
+    detections = np.array([x,y,depth,theta,labels])
+    return(detections)
+
 if __name__ == "__main__":
     #net = load_net("yolov2-tiny.cfg", "yolov2-tiny.weights", 0)
     #meta = load_meta("voc.data")
@@ -295,8 +330,15 @@ if __name__ == "__main__":
 
         if ret:
             #Localize detected objects:
-            detections = runOnVideo(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+            x,y,depths,labels,frame = predictFrames(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
+            print(len(x))
+            print(len(x))
+            print(depths)
+            print(labels)
 
+            cv.imshow('Test', frame)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break  
             #Create Semantic map:
             #mapGenerator(detections)
 
