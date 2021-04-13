@@ -7,6 +7,7 @@ import cv2 as cv
 import numpy as np
 from random import randint
 import pyrealsense2 as rs
+import matplotlib.pyplot as plt
 
 # SUPPORTING STRUCTS:
 #Bounding box
@@ -292,7 +293,6 @@ def getTarget(pipeD435, net, meta, guiShow):
     #Network will make predictions on each frame
     x,y,depth,labels,frame = predictFrames(net, meta, pipeD435) 
     #predictFrames(net, meta, pipeD435) 
-    print(depth,labels)
     
     #Calculate angle between camera origin and the centroid of bounding box
     theta = []
@@ -313,17 +313,29 @@ def getTarget(pipeD435, net, meta, guiShow):
 
 
 # Transform x,y,depth coordinates in 3D to 2D
-def detectionTransform(detections):
-    print("Transform")
+# def detectionTransform(detections):
+#     print("Transform")
 
 # Generate semantic map
-def mapGenerator(detections):
-    #Transform x,y,depth coordinates
-    detections2D = detectionTransform(detections)
+def mapGenerator(detections, intr):
+    #Transform x,y,depth coordinates to new xyz:
+    for i in range(0,len(detections[0])):
+        cxy = [detections[0][i], detections[1][i]]
+        depth = detections[2][i]
+        point = rs.rs2_deproject_pixel_to_point(intr, cxy, depth) #Outputs xyz in cameras reference frame in 3D space
 
-    #Apply transformed coordinates to map
-
-    #Display map
+        #Display map:
+        plt.ion()
+        if len(point) != 0: 
+            p=plt.plot(point[1], point[2],marker='o',label=detections[4][i])
+            plt.text(point[1],point[2],detections[4][i])
+            fig.canvas.draw()
+    img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
+    img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    img = cv.cvtColor(img,cv.COLOR_RGB2BGR)
+    cv.imshow("Labelled Map",img)
+    plt.clf()
+    plt.ioff()
 
 if __name__ == "__main__":
     #Set to 0 to turn off GUI's:
@@ -339,15 +351,20 @@ if __name__ == "__main__":
     config = rs.config()
     config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
     config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    pipeD435.start(config)
+    cfg = pipeD435.start(config)
 
+    profile = cfg.get_stream(rs.stream.depth) # Fetch stream profile for depth stream
+    intr = profile.as_video_stream_profile().get_intrinsics() # Downcast to video_stream_profile and fetch intrinsics
+
+    fig = plt.figure()
+    
     #While camera is on perform detection and mapping:
     while pipeD435.poll_for_frames:
         #Localize detected objects:
         detections = getTarget(pipeD435, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
 
         #Create Semantic map:
-        mapGenerator(detections)
+        if len(detections[0]) !=0: mapGenerator(detections, intr)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
 #ADDD make it so you have "persistence" in the map, everytime a object at a specific x,y (+/- 10 pix) you
