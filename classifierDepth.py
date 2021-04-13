@@ -330,12 +330,19 @@ def mapGenerator(detections, intr):
             p=plt.plot(point[1], point[2],marker='o',label=detections[4][i])
             plt.text(point[1],point[2],detections[4][i])
             fig.canvas.draw()
+
     img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
     img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
     img = cv.cvtColor(img,cv.COLOR_RGB2BGR)
     cv.imshow("Labelled Map",img)
     plt.clf()
     plt.ioff()
+
+    #ADDD make it so you have "persistence" in the map, everytime a object at a specific x,y (+/- 10 pix) you
+    #increment a count (x,y,depth,label,count) for that object and if count > thresh then draw it on the map, otherwise do 
+    #not draw it on the map
+
+    #ADD Make sure this plot is slowing FPS to much
 
 if __name__ == "__main__":
     #Set to 0 to turn off GUI's:
@@ -367,6 +374,3 @@ if __name__ == "__main__":
         if len(detections[0]) !=0: mapGenerator(detections, intr)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
-#ADDD make it so you have "persistence" in the map, everytime a object at a specific x,y (+/- 10 pix) you
-#increment a count (x,y,depth,label,count) for that object and if count > thresh then draw it on the map, otherwise do 
-#not draw it on the map
