@@ -8,11 +8,10 @@ This project implements a logistic regression classifer model with k-folds valid
 The following intructions detail how to reproduce the results discussed in the acompying report by running
 the provided code in Colabs or in your own local desktop environment.
 
-## Dependencies:
 This project uses ????? YOLOv3 ..
 
 ## Setup and Usage:
-### Setting up the local Environment
+### Setting up the Environment and Dependencies
 1. Unzip the provided file called "SemanticMapLabels.zip" OR visit https://github.com/MaxPolzinCU/SemanticMapLabels and clone the repository
 2. Install Python 3.8.5 and Pip 20.0.2 or greater
 3. Install the Intel RealSense SDK Python wrapper with the following command: "pip install pyrealsense2"
@@ -33,7 +32,7 @@ Once completed the desired weights (e.g. "yolov3-tiny.weights") should be moved 
 
 Alternatly the weights provided in this repository and the compiled "libdarknet.so" can be used if this code is being run on a CUDA enabled GPU.
 
-### Excuting locally
+### Running the system
 1. Open a terminal and cd into the "SemanticMapLabels" folder.
 2. Run: "python classifierDepth.py" \
 This will generate a 2D plot representing the environment captured by the stereo camera with annotated labels of the detected objects.   
