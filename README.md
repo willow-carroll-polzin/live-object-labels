@@ -41,17 +41,21 @@ This will generate a 2D plot representing the environment captured by the stereo
 This will access the computers webcam, if available, and perform objection detection while also ????????
 
 ## Repo Contents:
-- classifierDepth.py: Main script needed, allows for both object detection and mapping using the Inteal RealSense D435i stereo camera
-- classifierSingle.py: Test object detection on a single image, feed it a input image from ./models/data
-- classifierWebcam.py: Test object detection with a webcam
-- classifierWebcam2.py: Test object detection with a webcam, uses a structure more similar to that of the main "classifierDepth.py" script
-- models:
-    - weights: Folder to contain pre-trained weights for YOLOv3 Network
+- **classifierDepth.py**: Main script needed, allows for both object detection and mapping using the Inteal RealSense D435i stereo camera
+
+- **classifierSingle.py**: Test object detection on a single image, feed it a input image from ./models/data
+
+- **classifierWebcam.py**: Test object detection with a webcam
+
+- **classifierWebcam2.py**: Test object detection with a webcam, uses a structure more similar to that of the main "classifierDepth.py" script
+
+- **models**: Folder to contain everything related to the ML models
+    - *weights*: Folder to contain pre-trained weights for YOLOv3 Network
         - yolov3-tiny.weights: ????
-    - data: Folder to contain and labels or datasets to be used
+    - *data*: Folder to contain and labels or datasets to be used
         - dog.jpg: Test image for "classifierSingle.py"
         - coco.names: Contains all the labels from the COCO ??? database
-    - cfg: Folder to contain all config files for networks used
+    - *cfg*: Folder to contain all config files for networks used
         - coco.data: Config paramters for COCO ?????
-    - libdarknet.so: Pre-compiled Darknet library using YOLOv3 and trained on ????
+    - *libdarknet.so*: Pre-compiled Darknet library using YOLOv3 and trained on ????
 
