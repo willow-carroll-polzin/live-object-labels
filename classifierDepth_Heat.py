@@ -308,7 +308,7 @@ def getTarget(pipeD435, net, meta, guiShow):
     return(detections)
 
 # Generate semantic map
-def mapGenerator(detections, intr):
+def mapGenerator(detections, intr, frameFilter):
     plt.ion()
     plt.grid(color='r', linestyle='-', linewidth=2)
     plt.axis([-2.5,2.5,0,5])
@@ -328,7 +328,12 @@ def mapGenerator(detections, intr):
     img = np.frombuffer(fig.canvas.tostring_rgb(), dtype=np.uint8)
     img  = img.reshape(fig.canvas.get_width_height()[::-1] + (3,))
     img = cv.cvtColor(img,cv.COLOR_RGB2BGR)
+
+    #img2 = cv.createMat(640,480,frameFilter)
+    #img2=np.array(frameFilter,dtype=np.uint8)
+    #img2=cv.adaptiveThreshold(frameFilter,1,cv.ADAPTIVE_THRESH_MEAN_C,cv.THRESH_BINARY,3,0)
     cv.imshow("Labelled Map",img)
+    cv.imshow("Heat map",frameFilter)
     plt.clf()
     plt.ioff()
 
@@ -365,10 +370,29 @@ if __name__ == "__main__":
     #While camera is on perform detection and mapping:
     counter = 0
     while pipeD435.poll_for_frames:
+        counter=counter+1
+        if counter >NUM_SAMPLES_FILTER-1:
+            counter =0
+        np.delete(frameFilter,0,axis=3)
+        np.append(frameFilter,np.zeros((480,640,80))
+      
         #Localize detected objects:
         detections = getTarget(pipeD435, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
         
+        for i in range(len(detections[0])):
+            frameFilter[int(detections[1][i])][int(detections[0][i])][int(detections[5][i])][counter] = 1
+        newframeFilter=frameFilter.sum(axis=3) #sum across the 10 samples (4th axis of the 4-d array)
+        newframeFilter=newframeFilter.sum(axis=2) #sum across the labels
+        #storedDetections.append(detections)
+
+        #Remove excess detections
+        # if len(storedDetections) > 10:
+        #     storedDetections.remove(0)
+
+        #Average the detected points, remove noise
+
+
         #Create Semantic map:
-        if len(detections[0]) !=0: mapGenerator(detections, intr)
+        if len(detections[0]) !=0: mapGenerator(detections, intr, newframeFilter)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
