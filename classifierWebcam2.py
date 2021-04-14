@@ -38,15 +38,12 @@ class METADATA(Structure):
     _fields_ = [("classes", c_int),
                 ("names", POINTER(c_char_p))]
 
-#?????????
 class IplROI(Structure):
     pass
 
-#???????
 class IplTileInfo(Structure):
     pass
 
-#???????
 class IplImage(Structure):
     pass
 
@@ -154,7 +151,6 @@ predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
 #SUPPORTING FUNCTIONS:
-#???????
 def sample(probs):
     s = sum(probs)
     probs = [a/s for a in probs]
@@ -165,13 +161,11 @@ def sample(probs):
             return i
     return len(probs)-1
 
-#??????????
 def c_array(ctype, values):
     arr = (ctype*len(values))()
     arr[:] = values
     return arr
 
-#??????????
 def classify(net, meta, im):
     out = predict_image(net, im)
     res = []
@@ -179,7 +173,6 @@ def classify(net, meta, im):
         res.append((meta.names[i], out[i]))
     res = sorted(res, key=lambda x: -x[1])
     return res
-
 
 #Converts a input frame to a array of pixels:
 def array_to_image(arr):
@@ -190,42 +183,6 @@ def array_to_image(arr):
     data = arr.ctypes.data_as(POINTER(c_float))
     im = IMAGE(w,h,c,data)
     return im, arr
-
-# def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):
-#     """if isinstance(image, bytes):  
-#         # image is a filename 
-#         # i.e. image = b'/darknet/data/dog.jpg'
-#         im = load_image(image, 0, 0)
-#     else:  
-#         # image is an nparray
-#         # i.e. image = cv2.imread('/darknet/data/dog.jpg')
-#         im, image = array_to_image(image)
-#         rgbgr_image(im)
-#     """
-#     im, image = array_to_image(image)
-#     rgbgr_image(im)
-#     num = c_int(0)
-#     pnum = pointer(num)
-#     predict_image(net, im)
-#     dets = get_network_boxes(net, im.w, im.h, thresh, 
-#                              hier_thresh, None, 0, pnum)
-#     num = pnum[0]
-#     if nms: do_nms_obj(dets, num, meta.classes, nms)
-
-#     res = []
-#     for j in range(num):
-#         a = dets[j].prob[0:meta.classes]
-#         if any(a):
-#             ai = np.array(a).nonzero()[0]
-#             for i in ai:
-#                 b = dets[j].bbox
-#                 res.append((meta.names[i], dets[j].prob[i], 
-#                            (b.x, b.y, b.w, b.h)))
-
-#     res = sorted(res, key=lambda x: -x[1])
-#     if isinstance(image, bytes): free_image(im)
-#     free_detections(dets, num)
-#     return res
 
 def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
     classes_box_colors = [(0, 0, 255), (0, 255, 0)] 

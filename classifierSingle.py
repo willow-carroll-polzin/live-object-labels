@@ -54,7 +54,7 @@ make_image = lib.make_image
 make_image.argtypes = [c_int, c_int, c_int]
 make_image.restype = IMAGE
 
-# Get bounding boxes ????
+# Get bounding boxes
 get_network_boxes = lib.get_network_boxes
 get_network_boxes.argtypes = [c_void_p, c_int, c_int, c_float, c_float, POINTER(c_int), c_int, POINTER(c_int)]
 get_network_boxes.restype = POINTER(DETECTION)
@@ -92,7 +92,7 @@ letterbox_image = lib.letterbox_image
 letterbox_image.argtypes = [IMAGE, c_int, c_int]
 letterbox_image.restype = IMAGE
 
-#Image metadata ????
+#Image metadata
 load_meta = lib.get_metadata
 lib.get_metadata.argtypes = [c_char_p]
 lib.get_metadata.restype = METADATA
@@ -107,8 +107,6 @@ rgbgr_image.argtypes = [IMAGE]
 predict_image = lib.network_predict_image
 predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
-
-# OBJECT CLASSIFICATION FUNCTION:
 
 # OBJECT DETECTION FUNCTION:
 def detect(net, meta, image, thresh=.5, hier_thresh=.5, nms=.45):

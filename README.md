@@ -4,11 +4,7 @@
 Max Polzin
 
 ### Overview
-This project implements a logistic regression classifer model with k-folds validation and various other scripts to evaulate the on two datasets.
-The following intructions detail how to reproduce the results discussed in the acompying report by running
-the provided code in Colabs or in your own local desktop environment.
-
-This project uses ????? YOLOv3 ..
+This project uses DarkNet's YOLOv3, OpenCV, and the Intel RealSense SDK to perform object detection, localization and mapping of semantic data.
 
 ## Setup and Usage:
 ### Setting up the Environment and Dependencies
@@ -30,7 +26,7 @@ Follow the instructions provided in the following link to build the library: htt
     - DEBUG=0
 Once completed the desired weights (e.g. "yolov3-tiny.weights") should be moved into the ./model/weights folder and the compiled library "libdarknet.so" should be placed in the ./model folder. 
 
-Alternatly the weights provided in this repository and the compiled "libdarknet.so" can be used if this code is being run on a CUDA enabled GPU.
+Alternatly the weights provided in this repository and the compiled "libdarknet.so" can be used if this code is being run on a CUDA enabled GPU. Note this will only work on a Unix machine, as "libdarknet.so" wont run on Windows.
 
 ### Running the system
 1. Open a terminal and cd into the "SemanticMapLabels" folder.
@@ -50,11 +46,11 @@ This will access the computers webcam, if available, and perform objection detec
 
 - **models**: Folder to contain everything related to the ML models
     - *weights*: Folder to contain pre-trained weights for YOLOv3 Network
-        - yolov3-tiny.weights: ????
+        - yolov3-tiny.weights: Pre-trained wegihts
     - *data*: Folder to contain and labels or datasets to be used
         - dog.jpg: Test image for "classifierSingle.py"
-        - coco.names: Contains all the labels from the COCO ??? database
+        - coco.names: Contains all the labels from the COCO Dataset
     - *cfg*: Folder to contain all config files for networks used
-        - coco.data: Config paramters for COCO ?????
+        - coco.data: Config paramters for COCO Dataset
     - *libdarknet.so*: Pre-compiled Darknet library using YOLOv3 and trained on ????
 

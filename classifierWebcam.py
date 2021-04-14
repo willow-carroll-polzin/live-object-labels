@@ -38,15 +38,12 @@ class METADATA(Structure):
     _fields_ = [("classes", c_int),
                 ("names", POINTER(c_char_p))]
 
-#?????????
 class IplROI(Structure):
     pass
 
-#???????
 class IplTileInfo(Structure):
     pass
 
-#???????
 class IplImage(Structure):
     pass
 
@@ -154,7 +151,6 @@ predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
 #SUPPORTING FUNCTIONS:
-#???????
 def sample(probs):
     s = sum(probs)
     probs = [a/s for a in probs]
@@ -165,13 +161,11 @@ def sample(probs):
             return i
     return len(probs)-1
 
-#??????????
 def c_array(ctype, values):
     arr = (ctype*len(values))()
     arr[:] = values
     return arr
 
-#??????????
 def classify(net, meta, im):
     out = predict_image(net, im)
     res = []
@@ -226,8 +220,6 @@ def array_to_image(arr):
 #     if isinstance(image, bytes): free_image(im)
 #     free_detections(dets, num)
 #     return res
-
-
 
 def runOnVideo(net, meta, vid_source, thresh=.8, hier_thresh=.5, nms=.45):
     video = cv.VideoCapture(vid_source)

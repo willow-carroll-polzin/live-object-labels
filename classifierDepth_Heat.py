@@ -1,52 +1,9 @@
-
-# REQUIRED LIBRARIES:
-from ctypes import *
-import math
-import random
-import cv2 as cv
-import numpy as np
-from random import randint
-import pyrealsense2 as rs
-import matplotlib.pyplot as plt
-
-# SUPPORTING STRUCTS:
-#Bounding box
-class BOX(Structure):
-    _fields_ = [("x", c_float),
-                ("y", c_float),
-                ("w", c_float),
-                ("h", c_float)]
-
-#Input image
-class IMAGE(Structure):
-    _fields_ = [("w", c_int),
-                ("h", c_int),
-                ("c", c_int),
-                ("data", POINTER(c_float))]
-
-#Detection params
-class DETECTION(Structure):
-    _fields_ = [("bbox", BOX),
-                ("classes", c_int),
-                ("prob", POINTER(c_float)),
-                ("mask", POINTER(c_float)),
-                ("objectness", c_float),
-                ("sort_class", c_int)]
-
-#Frame metadata
-class METADATA(Structure):
-    _fields_ = [("classes", c_int),
-                ("names", POINTER(c_char_p))]
-
-#?????????
 class IplROI(Structure):
     pass
 
-#???????
 class IplTileInfo(Structure):
     pass
 
-#???????
 class IplImage(Structure):
     pass
 
@@ -156,7 +113,6 @@ predict_image.argtypes = [c_void_p, IMAGE]
 predict_image.restype = POINTER(c_float)
 
 #SUPPORTING FUNCTIONS:
-#???????
 def sample(probs):
     s = sum(probs)
     probs = [a/s for a in probs]
@@ -167,13 +123,11 @@ def sample(probs):
             return i
     return len(probs)-1
 
-#??????????
 def c_array(ctype, values):
     arr = (ctype*len(values))()
     arr[:] = values
     return arr
 
-#??????????
 def classify(net, meta, im):
     out = predict_image(net, im)
     res = []
