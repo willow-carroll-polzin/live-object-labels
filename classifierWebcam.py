@@ -233,7 +233,7 @@ def runOnVideo(net, meta, vid_source, thresh=.8, hier_thresh=.5, nms=.45):
     video = cv.VideoCapture(vid_source)
     count = 0
 
-    classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+    classes_box_colors = [(0, 0, 255), (0, 255, 0)]
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
     
     while video.isOpened():        

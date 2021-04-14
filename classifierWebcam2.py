@@ -228,7 +228,7 @@ def array_to_image(arr):
 #     return res
 
 def predictFrames(frame, net, meta, guiShow, thresh=.8, hier_thresh=.5, nms=.45):
-    classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+    classes_box_colors = [(0, 0, 255), (0, 255, 0)] 
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
 
     rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -319,9 +319,6 @@ if __name__ == "__main__":
             #Localize detected objects:
             #x,y,depths,labels,frame = predictFrames(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
             detections = getTarget(frame, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
-            # print(len(x))
-            # print(len(x))
-            # print(labels)
             print(detections)
 
             cv.imshow('Test', frame)

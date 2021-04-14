@@ -239,7 +239,7 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     label_num = []
 
     #Colours to draw on GUI with
-    classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+    classes_box_colors = [(0, 0, 255), (0, 255, 0)] 
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
     
     #Wait for a coherent pair of frames: depth and color

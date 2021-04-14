@@ -8,6 +8,7 @@ import numpy as np
 from random import randint
 import pyrealsense2 as rs
 import matplotlib.pyplot as plt
+from datetime import datetime
 
 # SUPPORTING STRUCTS:
 #Bounding box
@@ -239,7 +240,7 @@ def predictFrames(net, meta, videoSource, thresh=.8, hier_thresh=.5, nms=.45):
     label_num = []
 
     #Colours to draw on GUI with
-    classes_box_colors = [(0, 0, 255), (0, 255, 0)]  #red for palmup --> stop, green for thumbsup --> go
+    classes_box_colors = [(0, 0, 255), (0, 255, 0)]
     classes_font_colors = [(255, 255, 0), (0, 255, 255)]
     
     #Wait for a coherent pair of frames: depth and color
@@ -367,8 +368,13 @@ if __name__ == "__main__":
     while pipeD435.poll_for_frames:
         #Localize detected objects:
         detections = getTarget(pipeD435, net, meta, guiShow) #Return contains array of [x,y,depth,theta,label] for each detected object
-        
+        print(detections)
+
         #Create Semantic map:
         if len(detections[0]) !=0: mapGenerator(detections, intr)
+
+        now = datetime.now()
+        current_time = now.strftime("%H:%M:%S")
+        print("Current Time =", current_time)
 
 #ADD a def __init__ like in micamove.py and use multiple threads to handle network pred and mapping at the same time
